@@ -136,8 +136,8 @@ async function startcdp() {
 
   function click(x,y) {
     const options = {
-      x: 42,
-      y: 42,
+      x: x,
+      y: x,
       button: 'left',
       clickCount: 1
   };
@@ -150,7 +150,7 @@ async function startcdp() {
   }).catch((err) => {
       console.error(err);
   }).then(() => {
-      client.close();
+      protocol.close();
   });    
   }
 }
