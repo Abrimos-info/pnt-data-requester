@@ -6,35 +6,10 @@ if (devMode) {
     console.log("Content devMode",devMode);
 }
 
-let TANDA_SIZE = 33;
-const DEMORA_PNT = 100 * 1000; //100 segundos en milisegundos
-function updateBatchSize(num) { TANDA_SIZE = num }
-const PRESET_REQUEST_TEXT = "[Ingresa aquí el texto de tu solicitud, describiendo con precisión la información que quieres saber]\n\nEn caso de que la respuesta sea mayor al tamaño máximo que soporta la PNT (20mb) por favor enviarlo por correo electrónico a [pnt_user_mail] o utilizando un servicio de envío de archivos grandes como Google Drive, WeTransfer, Dropbox u otro de su preferencia.";
-const PIDALA_SIGNATURE = "\n\nSolicitud enviada mediante pidala.info";
-let pidalaSignatureEnabled = false;
+let waitingForElements;
 
-let pidala_settings = {};
-
-/** INICIALIZAR INTERFAZ */
-function isLoggedInPNT() {
-    let loginElem = $("#navbarSISAI li.isLogged");
-    if (loginElem.length > 0) return true;
-    return false;
-}
-
-let waitingForScripts = null;
-let waitingForElements = null;
-let waitingForElementsL = null;
-let waitingForElements2 = null;
-let waitingForElements3 = null;
-let waitingForElements4 = null;
-
-
-
-let pageInit = false;
-let pageInitHistorial = false;
-let wixPlanStatus = null;
-let wixPlanName = null;
+let TANDA_SIZE = 3; //Cantidad de estados a pedir
+// const DEMORA_PNT = 100 * 1000; //100 segundos en milisegundos
 // This is for communication with background
 chrome.runtime.onConnect.addListener(function (port) {
     // console.log('content runtime onConnect', port);
@@ -57,7 +32,22 @@ chrome.runtime.onConnect.addListener(function (port) {
     });
 });
 
+let injectionFails=0;
+function injectionFailed() {
+    injectionFails++;
+    if (injectionFails>10) {
+        console.log("pdr injection fail");
+    }
+}
+
+$("body").click((e) => {
+    console.log("pdr click",JSON.stringify(e),e.clientX,e.clientY,e.pageX,e.pageY);
+});
+
 function injectOpenData() {
+    if ($("#tipoBusqueda-1").length == 0) {
+        return injectionFailed();
+    }
     clearInterval(waitingForElements);
     console.log("injectOpenData");
     $("#column-1").prepend(`<div id="askOpenDataBtn" class="btn">
@@ -76,7 +66,7 @@ function injectOpenData() {
 let requestlog = {};
 async function askOpenData() {
     console.log("askOpenData");
-    for (let idOrgano = 1; idOrgano < 4; idOrgano++) {
+    for (let idOrgano = 1; idOrgano <= TANDA_SIZE; idOrgano++) {
         // await timeout(DEMORA_PNT*idOrgano);
         requestlog[idOrgano] = {'statusCode': 1};
         // console.log("requestlog",requestlog);

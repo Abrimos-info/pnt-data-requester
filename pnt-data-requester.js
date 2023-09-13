@@ -19,6 +19,7 @@ const flags = [
   '--disable-sync',
   '--disable-default-apps',
   '--no-default-browser-check',
+  '--no-sandbox',
   // '--disable-web-security',
   // '--metrics-recording-only',
   // '--mute-audio',
@@ -42,7 +43,7 @@ if (process.env.CHROME_PROXY) {
 
 var childProc = require('child_process');
 const childCommand = ''+chromePath+' '+flags.join(" ")+' '+startingUrl+' ';
-// console.log(childCommand);
+console.log(childCommand);
 let child = childProc.exec(childCommand, (error) => {
   console.log(error);
 });
@@ -84,7 +85,7 @@ async function startcdp() {
   } = protocol;
 
   await Promise.all([Console.enable(), Page.enable(), Runtime.enable()]);
-  console.log(await Storage.getSharedStorageEntries("local"));
+  // console.log(await Storage.getSharedStorageEntries("local"));
   Page.setDownloadBehavior({ behavior: 'allow', downloadPath: chromeDownloadPath})
   // Page.addScriptToEvaluateOnNewDocument(askfn,"askfn");
   
@@ -109,14 +110,20 @@ async function startcdp() {
   
   // REMARKS: messageAdded is fired every time a new console message is added
   Console.messageAdded((result) => {
-    if (result.message.text.indexOf("pdr") > -1) {
+    const text = result.message.text;
+    if (text.indexOf("pdr") > -1) {
       console.log("console:",result.message.text);
+
+      if (text.indexOf("pdr injection fail") > -1) {
+        click(816,497);
+      }
+  
+      if (text.indexOf("pdr finish") > -1) {
+        console.log("finish");
+        kill();
+      }
     }
 
-    if (result.message.text.indexOf("pdr finish") > -1) {
-      console.log("finish");
-      kill();
-    }
 
   });
 

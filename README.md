@@ -3,21 +3,31 @@
 Extensión de Chrome y script para NiFi que permite solicitar la descarga de los datos abiertos y monitorear que se haga todos los días de la Plataforma Nacional de Transparencia (PNT) de México. Un subproyecto de [Pidala.info](https://pidala.info/)
 
 ## Instalación
-
-### Google Chrome
-
-1. Clonar el repositorio
-2. Seguir los pasos de [esta guía](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked) (en inglés).
-
-### Script
-
+1. git clone
 1. npm install
-2. node pnt-data-requester.js
 
-## Configuración
+### Ejecución
 
-- dirección de mail
-- saltar días
-- url base
-- comando del navegador
-- variables de entorno del navegador
+Se configura con variables de entorno al correr.
+
+### Variables necesarias:
+- DISPLAY=:1
+- CHROME_DATADIR=$PWD/datadir
+- CHROME_EXTENSION_PATH=$PDW/extension
+
+### Variables opcionales:
+- STARTING_URL='https://www.plataformadetransparencia.org.mx/web/guest/datos_abiertos'
+- CHROME_PATH="google-chrome"
+- CHROME_PORT=37195
+- CHROME_DOWNLOAD_PATH=__dirname+"/downloads"
+
+Ejemplo:
+`DISPLAY=:1 CHROME_DATADIR=$PWD/datadir CHROME_EXTENSION_PATH=$PDW/extension node pnt-data-requester.js`
+
+## Pendientes:
+- Configurar dirección de mail
+- CHROME_PROXY = "";
+- PIDALA_MAIL_ADDRESS="pntpidala@mailcatch.com";
+- Elegir automaticamente el día
+- Loggear los días completados
+- Automatizar el click
