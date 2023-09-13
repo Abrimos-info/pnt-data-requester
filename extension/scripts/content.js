@@ -26,8 +26,13 @@ chrome.runtime.onConnect.addListener(function (port) {
 let injectionFails=0;
 function injectionFailed() {
     injectionFails++;
-    if (injectionFails>0) {
+    if (injectionFails == 2 || injectionFails == 20 || injectionFails == 100) {
         console.log("pdr injection fail");
+    }
+
+    if ($(".cf-error-details").length > 0) {
+        clearInterval(waitingForElements);
+        console.log("pdr finish - injection timeout");
     }
 }
 
