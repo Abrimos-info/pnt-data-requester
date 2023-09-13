@@ -1,0 +1,23 @@
+{
+  "name": "pnt-data-requester",
+  "version": "1.0.0",
+  "description": "Extensión de Chrome y script para NiFi que permite solicitar la descarga de los datos abiertos y monitorear que se haga todos los días de la Plataforma Nacional de Transparencia (PNT) de México. Un subproyecto de [Pidala.info](https://pidala.info/)",
+  "main": "pnt-data-requester.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/anticoding/pnt-plus.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/anticoding/pnt-plus/issues"
+  },
+  "homepage": "https://gitlab.com/anticoding/pnt-plus#readme",
+  "dependencies": {
+    "chrome-launcher": "^1.0.0",
+    "chrome-remote-interface": "^0.33.0"
+  }
+}
