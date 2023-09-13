@@ -12,8 +12,9 @@ Se configura con variables de entorno al correr.
 
 ### Variables necesarias:
 - DISPLAY=:1
-- CHROME_DATADIR=$PWD/datadir
-- CHROME_EXTENSION_PATH=$PDW/extension
+- CHROME_DATADIR=/path/to/pnt-data-requester/datadir
+- CHROME_EXTENSION_PATH=/path/to/pnt-data-requester/extension
+- PIDALA_MAIL_ADDRESS="pntpidala@mailcatch.com";
 
 ### Variables opcionales:
 - STARTING_URL='https://www.plataformadetransparencia.org.mx/web/guest/datos_abiertos'
@@ -22,12 +23,8 @@ Se configura con variables de entorno al correr.
 - CHROME_DOWNLOAD_PATH=__dirname+"/downloads"
 
 Ejemplo:
-`DISPLAY=:1 CHROME_DATADIR=$PWD/datadir CHROME_EXTENSION_PATH=$PDW/extension node pnt-data-requester.js`
+`DISPLAY=:1 PIDALA_MAIL_ADDRESS="pntpidala@mailcatch.com" CHROME_DATADIR=$PWD/datadir CHROME_EXTENSION_PATH=$PDW/extension node pnt-data-requester.js`
 
 ## Pendientes:
-- Configurar dirección de mail
 - CHROME_PROXY = "";
-- PIDALA_MAIL_ADDRESS="pntpidala@mailcatch.com";
-- Elegir automaticamente el día
-- Loggear los días completados
 - Automatizar el click
