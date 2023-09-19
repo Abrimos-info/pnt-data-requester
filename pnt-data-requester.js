@@ -7,7 +7,7 @@ const chromePath = process.env.CHROME_PATH || "google-chrome";
 const chromePort = process.env.CHROME_PORT || 37195;
 const chromeProxy = process.env.CHROME_PROXY || "";
 const chromeDownloadPath = process.env.CHROME_DOWNLOAD_PATH || __dirname+"/downloads"
-const pidalaMailAddress = process.env.PIDALA_MAIL_ADDRESS || "pntpidala@mailcatch.com";
+const pidalaMailAddress = process.env.PIDALA_MAIL_ADDRESS || "pntdata@abrimos.info";
 const dailyLogFolder = __dirname+"/log.daily/"
 
 const flags = [
@@ -42,16 +42,19 @@ if (process.env.CHROME_PROXY) {
   flags.push("--proxy="+process.env.CHROME_PROXY);
 }
 
+let errorCount = 0;
 let params;
 request_pnt_data();
 
-function request_pnt_data() {
+async function request_pnt_data() {
   params = calculateParams();
   console.log("iniciando",params.fechaInicio,"quedan",params.organos.length);
   
   if (params.organos.length > 0) {
-    let child = startBrowser();
+    let child = await startBrowser();
+    // console.log(child);
     child.on("exit",request_pnt_data)  
+    child.on("error",request_pnt_data)  
   }
   else {
     console.log("pdr finished");
@@ -160,33 +163,53 @@ function writeLog(dateoffset,lines) {
 //monitorea la salida
 //inicia el protocolo de control
 function startBrowser() {
-  var childProc = require('child_process');
-  const childCommand = ''+chromePath+' '+flags.join(" ")+' '+startingUrl+' ';
-  console.log(childCommand);
-  let child = childProc.exec(childCommand, (error) => {
-    console.log("Browser process ended:",error);
-  });
-  
-  
-  child.stdout.on('data', function(data) {
-    //Here is where the STDOUT output goes
-    
-    console.log('stdout: ' + data);
-    
-    data=data.toString();
-    // scriptOutput+=data;
-  });
-  child.stderr.on('data', function(data) {
-    //Here is where the STDERR output goes
-    
-    console.log('stderr: ' + data);
-    if (data.indexOf("DevTools") > -1) {
-      startcdp();
+
+  //First tries to connect to an instance that's already running
+  const child = CDP({
+      port: chromePort
+    }).then(protocol => {
+      initcdp(protocol);
+      return protocol;
+  }).catch(e=>{
+    console.log("PDR: Can't connect to Chrome or Chrome not running",e);
+    errorCount++;
+    if (errorCount > 3) {
+      return false;
     }
+
+    var childProc = require('child_process');
+    const childCommand = ''+chromePath+' '+flags.join(" ")+' ';
+    console.log(childCommand);
+  
+  
+  
+    let child = childProc.exec(childCommand, (error) => {
+      console.log("Browser process ended:",error);
+    });
     
-    // data=data.toString();
-    // scriptOutput+=data;
-  });
+    
+    child.stdout.on('data', function(data) {
+      //Here is where the STDOUT output goes
+      
+      console.log('stdout: ' + data);
+      
+      data=data.toString();
+      // scriptOutput+=data;
+    });
+    child.stderr.on('data', function(data) {
+      //Here is where the STDERR output goes
+      
+      console.log('stderr: ' + data);
+      if (data.indexOf("DevTools") > -1) {
+        return startBrowser();
+      }
+      
+      // data=data.toString();
+      // scriptOutput+=data;
+    });
+  
+    return child;
+  })
 
   return child;
 }
@@ -197,12 +220,8 @@ function startBrowser() {
 //monitorea carga de la página
 //monitorea consola
 //monitorea las descargas
-async function startcdp() {
-  // const chromeport = data.split(":")[2].split("/")[0];
-  // console.log("startcdp");
-  const protocol = await CDP({
-    port: chromePort
-  });
+async function initcdp(protocol) {
+  console.log("initcdp","conectado a chrome");
 
   const {
     Console,
@@ -223,10 +242,10 @@ async function startcdp() {
   // });    
   // await Page.stopLoading();
   // console.log("navigate");
-  // await Page.navigate({url: startingUrl});
-    Page.loadEventFired(async ()=>{
+  await Page.navigate({url: startingUrl});
+    Page.loadEventFired(async (e)=>{
       // console.log(await Page.getNavigationHistory())
-      console.log("load");
+      console.log("load",e);
       setTimeout(()=>{
         paramsText = JSON.stringify(params).replace(/\"/g,"\\\"");
         console.log(paramsText);
