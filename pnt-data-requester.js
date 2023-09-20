@@ -179,6 +179,9 @@ async function retryStartBrowser() {
   console.log("retry start browser",errorCount);
   {
     if (errorCount <= 6) {
+      params = calculateParams();
+      console.log("iniciando reintento",params.fechaInicio,"quedan",params.organos.length);
+    
       child2 = await startBrowser();
     }
     else {
@@ -366,18 +369,7 @@ async function initcdp(protocol) {
     clearTimeout(killTimeout);
     killTimeout=null;
 
-    try {
-
-      Page.close();
-      // Browser.close();
-      // protocol.close();
-    }
-    catch(e) {
-      console.log("kill failed",e);
-    }
-
-    Promise.resolve(browserPromises);
-    // process.exit();
+    Page.close();
   }
 
   function click(x,y) {
