@@ -17,7 +17,7 @@ chrome.runtime.onConnect.addListener(function (port) {
         // console.log('content port onMessage', port, msg);
         // console.log("msg",msg);
 
-        if (msg.url && msg.url.match("/web/guest/datos_abiertos")) {
+        if (msg.url && msg.url.match("es/web/guest/datos_abiertos")) {
             waitingForElements = setInterval(injectOpenData, 1000);
         }
     });

@@ -1,8 +1,9 @@
 
 const CDP = require('chrome-remote-interface');
 var fs = require('fs');
+const { EventEmitter } = require('stream');
 
-const startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/web/guest/datos_abiertos';
+const startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
 const chromePath = process.env.CHROME_PATH || "google-chrome";
 const chromePort = process.env.CHROME_PORT || 37195;
 const chromeProxy = process.env.CHROME_PROXY || "";
@@ -42,23 +43,36 @@ if (process.env.CHROME_PROXY) {
   flags.push("--proxy="+process.env.CHROME_PROXY);
 }
 
-let errorCount = 0;
+let errorCount;
 let params;
-request_pnt_data();
+// request_pnt_data();
 
-async function request_pnt_data() {
+module.exports = { request_pnt_data }
+
+let requestlog;
+let child2;
+
+async function request_pnt_data(retry) {
+  console.log("request_pnt_data");
+  requestlog = [];
+  if (!retry) {
+    errorCount = -1;
+  }
+
   params = calculateParams();
   console.log("iniciando",params.fechaInicio,"quedan",params.organos.length);
   
   if (params.organos.length > 0) {
-    let child = await startBrowser();
-    // console.log(child);
-    child.on("exit",request_pnt_data)  
-    child.on("error",request_pnt_data)  
+    child2 = await startBrowser();
+    console.log("child2",child2);
   }
   else {
     console.log("pdr finished");
   }
+
+  console.log("request_pnt_data","returning",errorCount);
+
+  return {log: requestlog, errors: errorCount};
 }
 
 
@@ -159,22 +173,42 @@ function writeLog(dateoffset,lines) {
   fs.writeFileSync(fd,lines.join("\n")+"\n");
 }
 
+
+
+async function retryStartBrowser() {
+  console.log("retry start browser",errorCount);
+  {
+    if (errorCount <= 0) {
+      child2 = await startBrowser();
+    }
+    else {
+      console.log("too many retries, resolving promise");
+      // child2.kill("too many retries");
+      browserPromises.map(resolve => resolve(1));
+      console.log("resolved promises",browserPromises);
+    }
+  }  
+}
+
 //abre el navegador con la extensión
 //monitorea la salida
 //inicia el protocolo de control
-function startBrowser() {
+async function startBrowser() {
 
   //First tries to connect to an instance that's already running
-  const child = CDP({
+  let child;
+  childBrowser = CDP({
       port: chromePort
     }).then(protocol => {
       initcdp(protocol);
-      return protocol;
+      // return protocol;
   }).catch(e=>{
     console.log("PDR: Can't connect to Chrome or Chrome not running",e);
     errorCount++;
     if (errorCount > 3) {
-      return false;
+      child = new EventEmitter();
+
+      child.emit("exit");
     }
 
     var childProc = require('child_process');
@@ -183,12 +217,15 @@ function startBrowser() {
   
   
   
-    let child = childProc.exec(childCommand, (error) => {
+    childBrowser = childProc.exec(childCommand, (error) => {
       console.log("Browser process ended:",error);
     });
     
     
-    child.stdout.on('data', function(data) {
+    childBrowser.on("exit",retryStartBrowser);
+    childBrowser.on("error",retryStartBrowser);
+
+    childBrowser.stdout.on('data', function(data) {
       //Here is where the STDOUT output goes
       
       console.log('stdout: ' + data);
@@ -196,7 +233,7 @@ function startBrowser() {
       data=data.toString();
       // scriptOutput+=data;
     });
-    child.stderr.on('data', function(data) {
+    childBrowser.stderr.on('data', function(data) {
       //Here is where the STDERR output goes
       
       console.log('stderr: ' + data);
@@ -208,13 +245,19 @@ function startBrowser() {
       // scriptOutput+=data;
     });
   
-    return child;
+    // return childBrowser;
   })
 
-  return child;
+  let promise = new Promise((res,rej)=>{
+
+    browserPromises.push(res);
+  });
+  return promise;
 }
 
+let browserPromises = [];
 
+let killTimeout=null;
 //procolo de control
 //configura ruta de descargas
 //monitorea carga de la página
@@ -242,15 +285,26 @@ async function initcdp(protocol) {
   // });    
   // await Page.stopLoading();
   // console.log("navigate");
-  await Page.navigate({url: startingUrl});
+    Page.navigate({url: startingUrl});
     Page.loadEventFired(async (e)=>{
+
+      clearTimeout(killTimeout);
+      killTimeout=null;
+
+      killTimeout = setTimeout(()=>{
+        console.log("Browser action timeout, kill");
+        kill("timeout");
+      },10000)
+
       // console.log(await Page.getNavigationHistory())
-      console.log("load",e);
+      console.log("page loaded",e);
       setTimeout(()=>{
         paramsText = JSON.stringify(params).replace(/\"/g,"\\\"");
-        console.log(paramsText);
+        console.log("Sending params",paramsText);
 
         Runtime.evaluate({ expression: '$(".title-morado").text("'+paramsText+'")' });
+
+  
       },1000)
 
       // Runtime.evaluate({ expression: `askOpenData();` });
@@ -258,18 +312,19 @@ async function initcdp(protocol) {
 
   Page.downloadProgress ((result) => {
     if (result.state == "completed") {
-        console.log("download completed");
-        kill();
+        console.log("download completed, kill");
+        kill("completed");
       }
     });
   // console.log(await Page.VisualViewport());
   // REMARKS: messageAdded is fired every time a new console message is added
-  let requestlog = [];
 
   Console.messageAdded((result) => {
     const text = result.message.text;
     if (text.indexOf("pdr") > -1) {
       console.log("console:",result.message.text);
+      clearTimeout(killTimeout);
+      killTimeout=null;
 
       if (text.indexOf("pdr injection fail") > -1) {
         console.log("HACER CLICK");
@@ -286,18 +341,30 @@ async function initcdp(protocol) {
   
       if (text.indexOf("pdr finish") > -1) {
         writeLog(params.dateoffset,requestlog);
-        console.log("finish");
-        kill();
+        console.log("finish requesting, kill");
+        kill("finish");
       }
     }
 
 
   });
 
-  function kill() {
-    console.log("kill");
-    Browser.close();
-    protocol.close();
+  function kill(source) {
+    console.log("kill",source,browserPromises);
+    clearTimeout(killTimeout);
+    killTimeout=null;
+
+    try {
+
+      Page.close();
+      // Browser.close();
+      // protocol.close();
+    }
+    catch(e) {
+      console.log("kill failed",e);
+    }
+
+    Promise.resolve(browserPromises);
     // process.exit();
   }
 
