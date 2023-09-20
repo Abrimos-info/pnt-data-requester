@@ -236,7 +236,7 @@ async function startBrowser() {
     childBrowser.stderr.on('data', function(data) {
       //Here is where the STDERR output goes
       
-      console.log('stderr: ' + data);
+      // console.log('stderr: ' + data);
       if (data.indexOf("DevTools") > -1) {
         return startBrowser();
       }
@@ -258,6 +258,7 @@ async function startBrowser() {
 let browserPromises = [];
 
 let killTimeout=null;
+let paramsInterval = null;
 //procolo de control
 //configura ruta de descargas
 //monitorea carga de la página
@@ -299,13 +300,13 @@ async function initcdp(protocol) {
 
       // console.log(await Page.getNavigationHistory())
       console.log("page loaded",e);
-      setTimeout(()=>{
+      paramsInterval = setInterval(()=>{
         console.log("check params ready")
         Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
 
 
   
-      },1000)
+      },100)
 
       // Runtime.evaluate({ expression: `askOpenData();` });
     })
@@ -327,6 +328,8 @@ async function initcdp(protocol) {
       delete killTimeout;
 
       if (text.indexOf("pdr params") > -1) {
+        clearInterval(paramsInterval);
+
         paramsText = JSON.stringify(params).replace(/\"/g,"\\\"");
         console.log("Sending params",paramsText);
         Runtime.evaluate({ expression: '$(".title-morado").text("'+paramsText+'")' });
