@@ -45,11 +45,10 @@ async function injectOpenData() {
     if ($("#tipoBusqueda-1").length == 0) {
         return injectionFailed();
     }
-    clearInterval(waitingForElements);
+
     console.log("injectOpenData");
-
     try {
-
+        
         params = JSON.parse($(".title-morado").text());
         console.log("pdr params",params);
     }
@@ -57,6 +56,7 @@ async function injectOpenData() {
         console.log("pdr finish", "missing params");
         return;
     }
+    clearInterval(waitingForElements);
     for (let idOrgano = 1; idOrgano <= TANDA_SIZE; idOrgano++) {
         fechaInicio = params.fechaInicio;
         fechaFin = params.fechaFin;

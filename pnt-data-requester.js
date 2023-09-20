@@ -178,7 +178,7 @@ function writeLog(dateoffset,lines) {
 async function retryStartBrowser() {
   console.log("retry start browser",errorCount);
   {
-    if (errorCount <= 0) {
+    if (errorCount <= 6) {
       child2 = await startBrowser();
     }
     else {
