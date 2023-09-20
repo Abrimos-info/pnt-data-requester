@@ -40,7 +40,7 @@ function injectionFailed() {
 $("body").click((e) => {
     console.log("pdr click",JSON.stringify(e),e.clientX,e.clientY,e.pageX,e.pageY);
 });
-
+let missingParamsCounter = 0;
 async function injectOpenData() {
     if ($("#tipoBusqueda-1").length == 0) {
         return injectionFailed();
@@ -53,7 +53,9 @@ async function injectOpenData() {
         console.log("pdr params",params);
     }
     catch(e) {
-        console.log("pdr finish", "missing params");
+        if (missingParamsCounter > 10) {
+            console.log("pdr finish", "missing params");
+        }
         return;
     }
     clearInterval(waitingForElements);
