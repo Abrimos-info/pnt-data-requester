@@ -3,11 +3,14 @@ const CDP = require('chrome-remote-interface');
 var fs = require('fs');
 const { EventEmitter } = require('stream');
 
-const startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
 const chromePath = process.env.CHROME_PATH || "google-chrome";
 const chromePort = process.env.CHROME_PORT || 37195;
 const chromeProxy = process.env.CHROME_PROXY || "";
-const chromeDownloadPath = process.env.CHROME_DOWNLOAD_PATH || __dirname+"/downloads"
+
+//These can change from download_file
+let startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
+let chromeDownloadPath = process.env.CHROME_DOWNLOAD_PATH || __dirname+"/downloads"
+
 const pidalaMailAddress = process.env.PIDALA_MAIL_ADDRESS || "pntdata@abrimos.info";
 const dailyLogFolder = __dirname+"/log.daily/"
 
@@ -47,12 +50,13 @@ let errorCount;
 let params;
 // request_pnt_data();
 
-module.exports = { request_pnt_data }
+module.exports = { request_pnt_data, download_file }
 
 let requestlog;
 let child2;
 
 async function request_pnt_data(retry) {
+  mode="request";
   console.log("request_pnt_data");
   requestlog = [];
   if (!retry) {
@@ -73,6 +77,25 @@ async function request_pnt_data(retry) {
   console.log("request_pnt_data","returning",errorCount);
 
   return {log: requestlog, errors: errorCount};
+}
+let downloadlog;
+let mode;
+async function download_file(src,dest,retry) {
+  mode="download";
+
+  console.log("download_file");
+  downloadlog = {};
+  if (!retry) {
+    errorCount = -1;
+  }
+  startingUrl = src;
+  chromeDownloadPath = dest;
+  child2 = await startBrowser("download");
+  console.log("pdr finished");
+
+  console.log("download_file","returning",errorCount);
+
+  return downloadlog;
 }
 
 
@@ -175,8 +198,8 @@ function writeLog(dateoffset,lines) {
 
 
 
-async function retryStartBrowser() {
-  console.log("retry start browser",errorCount);
+async function retryStartBrowser(cause) {
+  console.log("retry start browser",errorCount,"mode",mode,"cause",cause);
   {
     if (errorCount <= 6) {
       params = calculateParams();
@@ -203,8 +226,8 @@ async function startBrowser() {
   childBrowser = CDP({
       port: chromePort
     }).then(protocol => {
+      //If chrome is running, we connect
       initcdp(protocol);
-      // return protocol;
   }).catch(e=>{
     console.log("PDR: Can't connect to Chrome or Chrome not running",e);
     errorCount++;
@@ -224,17 +247,14 @@ async function startBrowser() {
       console.log("Browser process ended:",error);
     });
     
-    
-    childBrowser.on("exit",retryStartBrowser);
-    childBrowser.on("error",retryStartBrowser);
+    if (mode == "request") {
+      childBrowser.on("exit",()=>{ retryStartBrowser(mode,"exit")} );
+      childBrowser.on("error",()=>{ retryStartBrowser(mode,"error")});
+    }
 
     childBrowser.stdout.on('data', function(data) {
-      //Here is where the STDOUT output goes
-      
+      //Here is where the STDOUT output goes      
       console.log('stdout: ' + data);
-      
-      data=data.toString();
-      // scriptOutput+=data;
     });
     childBrowser.stderr.on('data', function(data) {
       //Here is where the STDERR output goes
@@ -243,12 +263,7 @@ async function startBrowser() {
       if (data.indexOf("DevTools") > -1) {
         return startBrowser();
       }
-      
-      // data=data.toString();
-      // scriptOutput+=data;
-    });
-  
-    // return childBrowser;
+    });  
   })
 
   let promise = new Promise((res,rej)=>{
@@ -281,6 +296,7 @@ async function initcdp(protocol) {
   await Promise.all([Console.enable(), Page.enable(), Runtime.enable()]);
   // console.log(await Storage.getSharedStorageEntries("local"));
   Page.setDownloadBehavior({ behavior: 'allow', downloadPath: chromeDownloadPath})
+  downloadlog.downloadPath = chromeDownloadPath;
   // Page.addScriptToEvaluateOnNewDocument(askfn,"askfn");
   
   // await Runtime.evaluate({
@@ -289,7 +305,12 @@ async function initcdp(protocol) {
   // });    
   // await Page.stopLoading();
   // console.log("navigate");
-    Page.navigate({url: startingUrl});
+  
+  downloadlog.url = startingUrl;
+  Page.navigate({url: startingUrl}).catch(e=> {
+      console.error("Navigation error", e);
+      kill("navigation error");
+    });
     Page.loadEventFired(async (e)=>{
 
       clearTimeout(killTimeout);
@@ -318,6 +339,7 @@ async function initcdp(protocol) {
   Page.downloadProgress ((result) => {
     if (result.state == "completed") {
         console.log("download completed, kill");
+        downloadlog.status = "download completed";
         kill("completed");
       }
     });
@@ -367,9 +389,15 @@ async function initcdp(protocol) {
   function kill(source) {
     console.log("kill",source);
     clearTimeout(killTimeout);
+    clearInterval(paramsInterval);
     killTimeout=null;
+    downloadlog.status = source;
 
     Page.close();
+    if(mode=="download") {
+      browserPromises.map(resolve => resolve(1));
+
+    }
   }
 
   function click(x,y) {

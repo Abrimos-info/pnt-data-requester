@@ -7,10 +7,16 @@ const requestListener = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
 
     try {
-
-        switch (req.url) {
+        let url = new URL(req.url, "http://localhost");
+        // console.log(url.searchParams);
+        switch (url.pathname) {
             case "/requestData":
                 result = await requestData();
+                res.writeHead(200);
+                res.end(JSON.stringify(result));
+                break
+            case "/downloadFile":
+                result = await downloadFile(url.searchParams.get("src"),url.searchParams.get("dest"));
                 res.writeHead(200);
                 res.end(JSON.stringify(result));
                 break
@@ -40,6 +46,19 @@ function requestData() {
     console.log("Request Data");
     try {
         return dataRequester.request_pnt_data();
+    }
+    catch(e) {
+        return e;
+    }
+}
+
+
+function downloadFile(src,dest) {
+    console.log("downloadFile",src,dest);
+    try {
+        // return 1
+        return dataRequester.download_file(src,dest);
+        // return dataRequester.request_pnt_data();
     }
     catch(e) {
         return e;
