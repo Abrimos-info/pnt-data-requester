@@ -26,7 +26,7 @@ chrome.runtime.onConnect.addListener(function (port) {
 let injectionFails=0;
 function injectionFailed() {
     injectionFails++;
-    if (injectionFails == 2 || injectionFails == 20 || injectionFails == 100) {
+    if (injectionFails == 4 || injectionFails == 20 || injectionFails == 100) {
         console.log("pdr injection fail");
     }
 

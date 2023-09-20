@@ -64,7 +64,7 @@ async function request_pnt_data(retry) {
   
   if (params.organos.length > 0) {
     child2 = await startBrowser();
-    console.log("child2",child2);
+    // console.log("child2",child2);
   }
   else {
     console.log("pdr finished");
@@ -185,7 +185,7 @@ async function retryStartBrowser() {
       console.log("too many retries, resolving promise");
       // child2.kill("too many retries");
       browserPromises.map(resolve => resolve(1));
-      console.log("resolved promises",browserPromises);
+      // console.log("resolved promises",browserPromises);
     }
   }  
 }
@@ -290,6 +290,7 @@ async function initcdp(protocol) {
 
       clearTimeout(killTimeout);
       killTimeout=null;
+      delete killTimeout;
 
       killTimeout = setTimeout(()=>{
         console.log("Browser action timeout, kill");
@@ -299,10 +300,9 @@ async function initcdp(protocol) {
       // console.log(await Page.getNavigationHistory())
       console.log("page loaded",e);
       setTimeout(()=>{
-        paramsText = JSON.stringify(params).replace(/\"/g,"\\\"");
-        console.log("Sending params",paramsText);
+        console.log("check params ready")
+        Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
 
-        Runtime.evaluate({ expression: '$(".title-morado").text("'+paramsText+'")' });
 
   
       },1000)
@@ -324,7 +324,15 @@ async function initcdp(protocol) {
     if (text.indexOf("pdr") > -1) {
       console.log("console:",result.message.text);
       clearTimeout(killTimeout);
-      killTimeout=null;
+      delete killTimeout;
+
+      if (text.indexOf("pdr params") > -1) {
+        paramsText = JSON.stringify(params).replace(/\"/g,"\\\"");
+        console.log("Sending params",paramsText);
+        Runtime.evaluate({ expression: '$(".title-morado").text("'+paramsText+'")' });
+      }
+
+
 
       if (text.indexOf("pdr injection fail") > -1) {
         console.log("HACER CLICK");
@@ -350,7 +358,7 @@ async function initcdp(protocol) {
   });
 
   function kill(source) {
-    console.log("kill",source,browserPromises);
+    console.log("kill",source);
     clearTimeout(killTimeout);
     killTimeout=null;
 
