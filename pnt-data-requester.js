@@ -301,8 +301,8 @@ async function initcdp(protocol) {
       // console.log(await Page.getNavigationHistory())
       console.log("page loaded",e);
       clearInterval(paramsInterval);
+      console.log("check params ready")
       paramsInterval = setInterval(()=>{
-        console.log("check params ready")
         Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
 
 
