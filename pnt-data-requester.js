@@ -65,7 +65,7 @@ async function request_pnt_data(retry) {
 
   params = calculateParams();
   console.log("iniciando",params.fechaInicio,"quedan",params.organos.length);
-  
+
   if (params.organos.length > 0) {
     child2 = await startBrowser();
     // console.log("child2",child2);
@@ -99,7 +99,7 @@ async function download_file(src,dest,retry) {
 }
 
 
-/* 
+/*
 la extensión abre el log de hoy y se fija si ya pidió exitosamente todos los estados
   si lo hizo bien
     no hace nada
@@ -116,14 +116,14 @@ function calculateParams() {
     organos: [],
     dateoffset: 0,
     email: pidalaMailAddress
-  }  
+  }
 
 
   let date = "";
   logfound = false;
   let limit = 99;
   while (!logfound && limit > 0) {
-    
+
     let dateoffset = 100-limit;
     limit--;
       date = getDate(dateoffset,"-");
@@ -142,7 +142,7 @@ function calculateParams() {
           //Si no está este organo en ok en el log, entonces lo agregamos
           if (logcontents.indexOf(" "+i+" ok") == -1) {
             // console.log("not found",i)
-            params.organos.push(i);          
+            params.organos.push(i);
           }
           else {
             // console.log("found",i)
@@ -155,9 +155,9 @@ function calculateParams() {
           params.fechaFin = getDate(dateoffset-2,"/",true);
           params.organos = new Array();
           for (let i=1;i<=33;i++) {
-              params.organos.push(i);          
+              params.organos.push(i);
           }
-  
+
         }
       }
       catch(e) {
@@ -204,7 +204,7 @@ async function retryStartBrowser(cause) {
     if (errorCount <= 6) {
       params = calculateParams();
       console.log("iniciando reintento",params.fechaInicio,"quedan",params.organos.length);
-    
+
       child2 = await startBrowser();
     }
     else {
@@ -213,7 +213,7 @@ async function retryStartBrowser(cause) {
       browserPromises.map(resolve => resolve(1));
       // console.log("resolved promises",browserPromises);
     }
-  }  
+  }
 }
 
 //abre el navegador con la extensión
@@ -240,30 +240,30 @@ async function startBrowser() {
     var childProc = require('child_process');
     const childCommand = ''+chromePath+' '+flags.join(" ")+' ';
     console.log(childCommand);
-  
-  
-  
+
+
+
     childBrowser = childProc.exec(childCommand, (error) => {
       console.log("Browser process ended:",error);
     });
-    
+
     if (mode == "request") {
       childBrowser.on("exit",()=>{ retryStartBrowser(mode,"exit")} );
       childBrowser.on("error",()=>{ retryStartBrowser(mode,"error")});
     }
 
     childBrowser.stdout.on('data', function(data) {
-      //Here is where the STDOUT output goes      
+      //Here is where the STDOUT output goes
       console.log('stdout: ' + data);
     });
     childBrowser.stderr.on('data', function(data) {
       //Here is where the STDERR output goes
-      
+
       // console.log('stderr: ' + data);
       if (data.indexOf("DevTools") > -1) {
         return startBrowser();
       }
-    });  
+    });
   })
 
   let promise = new Promise((res,rej)=>{
@@ -296,17 +296,17 @@ async function initcdp(protocol) {
   await Promise.all([Console.enable(), Page.enable(), Runtime.enable()]);
   // console.log(await Storage.getSharedStorageEntries("local"));
   Page.setDownloadBehavior({ behavior: 'allow', downloadPath: chromeDownloadPath})
-  downloadlog.downloadPath = chromeDownloadPath;
+  if(mode=="download") downloadlog.downloadPath = chromeDownloadPath;
   // Page.addScriptToEvaluateOnNewDocument(askfn,"askfn");
-  
+
   // await Runtime.evaluate({
   //   expression: askfn,
   //   awaitPromise: true
-  // });    
+  // });
   // await Page.stopLoading();
   // console.log("navigate");
-  
-  downloadlog.url = startingUrl;
+
+  if(mode=="download") downloadlog.url = startingUrl;
   Page.navigate({url: startingUrl}).catch(e=> {
       console.error("Navigation error", e);
       kill("navigation error");
@@ -330,7 +330,7 @@ async function initcdp(protocol) {
         Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
 
 
-  
+
       },100)
 
       // Runtime.evaluate({ expression: `askOpenData();` });
@@ -375,7 +375,7 @@ async function initcdp(protocol) {
         }
         // click((Page.VisualViewport.width/2)-150+35,497);
       }
-  
+
       if (text.indexOf("pdr finish") > -1) {
         writeLog(params.dateoffset,requestlog);
         console.log("finish requesting, kill");
@@ -391,7 +391,7 @@ async function initcdp(protocol) {
     clearTimeout(killTimeout);
     clearInterval(paramsInterval);
     killTimeout=null;
-    downloadlog.status = source;
+    if(mode=="download") downloadlog.status = source;
 
     Page.close();
     if(mode=="download") {
@@ -417,7 +417,6 @@ async function initcdp(protocol) {
         console.error(err);
     }).then(() => {
         protocol.close();
-    });    
+    });
   }
 }
-
