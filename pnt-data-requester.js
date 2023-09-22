@@ -302,26 +302,28 @@ async function initcdp(protocol) {
         kill("navigation error");
     });
 
-    Page.loadEventFired(async (e)=>{
-        clearTimeout(killTimeout);
-        killTimeout=null;
-        delete killTimeout;
+    if(mode!="download") {
+        Page.loadEventFired(async (e)=>{
+            clearTimeout(killTimeout);
+            killTimeout=null;
+            delete killTimeout;
 
-        killTimeout = setTimeout(()=>{
-            console.log("Browser action timeout, kill");
-            kill("timeout");
-        },10000)
+            killTimeout = setTimeout(()=>{
+                console.log("Browser action timeout, kill");
+                kill("timeout");
+            },10000)
 
-        // console.log(await Page.getNavigationHistory())
-        console.log("page loaded",e);
-        clearInterval(paramsInterval);
-        console.log("check params ready")
-        paramsInterval = setInterval(()=>{
-            Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
-        },100)
+            // console.log(await Page.getNavigationHistory())
+            console.log("page loaded",e);
+            clearInterval(paramsInterval);
+            console.log("check params ready")
+            paramsInterval = setInterval(()=>{
+                Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
+            },100)
 
-        // Runtime.evaluate({ expression: `askOpenData();` });
-    })
+            // Runtime.evaluate({ expression: `askOpenData();` });
+        })
+    }
 
     Browser.downloadWillBegin ((result) => {
         console.log("downloadWillBegin", result);
@@ -333,16 +335,6 @@ async function initcdp(protocol) {
             downloadlog.status = "download completed";
             kill("completed");
         }
-
-        clearTimeout(killTimeout);
-        killTimeout=null;
-        delete killTimeout;
-
-        killTimeout = setTimeout(()=>{
-            console.log("Browser action timeout, kill");
-            kill("timeout");
-        },10000)
-
     });
 
     // console.log(await Page.VisualViewport());
