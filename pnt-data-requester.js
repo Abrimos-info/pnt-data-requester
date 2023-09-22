@@ -323,6 +323,9 @@ async function initcdp(protocol) {
         // Runtime.evaluate({ expression: `askOpenData();` });
     })
 
+    Page.downloadWillBegin ((result) => {
+        console.log(result);
+    });
     Page.downloadProgress ((result) => {
         console.log("downloadProgress", result);
         if (result.state == "completed") {
