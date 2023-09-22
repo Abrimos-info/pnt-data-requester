@@ -319,10 +319,7 @@ async function initcdp(protocol) {
         kill("navigation error");
     });
 
-    Browser.downloadWillBegin ((result) => {
-        console.log("downloadWillBegin", result);
-    });
-    Browser.downloadProgress ((result) => {
+    Page.downloadProgress ((result) => {
         console.log("downloadProgress", result);
         if (result.state == "completed") {
             console.log("download completed, kill");
