@@ -324,13 +324,11 @@ async function initcdp(protocol) {
     })
 
     Page.downloadProgress ((result) => {
+        console.log("downloadProgress", result);
         if (result.state == "completed") {
             console.log("download completed, kill");
             downloadlog.status = "download completed";
             kill("completed");
-        }
-        else {
-            console.log("downloadProgress", result);
         }
 
         clearTimeout(killTimeout);
