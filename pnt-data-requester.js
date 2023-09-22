@@ -285,24 +285,12 @@ async function initcdp(protocol) {
     await Promise.all([Console.enable(), Page.enable(), Runtime.enable()]);
     // console.log(await Storage.getSharedStorageEntries("local"));
     Page.setDownloadBehavior({ behavior: 'allow', downloadPath: chromeDownloadPath})
-    if(mode=="download") downloadlog.downloadPath = chromeDownloadPath;
-    // Page.addScriptToEvaluateOnNewDocument(askfn,"askfn");
-
-    // await Runtime.evaluate({
-    //   expression: askfn,
-    //   awaitPromise: true
-    // });
-    // await Page.stopLoading();
-    // console.log("navigate");
-
-    if(mode=="download") downloadlog.url = startingUrl;
-
-    Page.navigate({url: startingUrl}).catch(e=> {
-        console.error("Navigation error", e);
-        kill("navigation error");
-    });
-
-    if(mode!="download") {
+    console.log('mode:', mode);
+    if(mode=="download") {
+        downloadlog.downloadPath = chromeDownloadPath;
+        downloadlog.url = startingUrl;
+    }
+    else {
         Page.loadEventFired(async (e)=>{
             clearTimeout(killTimeout);
             killTimeout=null;
@@ -324,6 +312,11 @@ async function initcdp(protocol) {
             // Runtime.evaluate({ expression: `askOpenData();` });
         })
     }
+
+    Page.navigate({url: startingUrl}).catch(e=> {
+        console.error("Navigation error", e);
+        kill("navigation error");
+    });
 
     Browser.downloadWillBegin ((result) => {
         console.log("downloadWillBegin", result);
