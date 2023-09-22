@@ -236,6 +236,7 @@ async function startBrowser() {
 
         childBrowser = childProc.exec(childCommand, (error) => {
             console.log("Browser process ended:",error);
+            kill("Browser closed.")
         });
 
         if (mode == "request") {
