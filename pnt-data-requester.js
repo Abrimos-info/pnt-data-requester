@@ -136,7 +136,7 @@ function calculateParams() {
         console.log("log for date found",date);
         params.dateoffset = dateoffset;
         params.fechaInicio = getDate(dateoffset,"/",true);
-        params.fechaFin = getDate(dateoffset-1,"/",true);
+        params.fechaFin = getDate(dateoffset,"/",true);
         params.organos = new Array();
         for (let i=1;i<=33;i++) {
           //Si no está este organo en ok en el log, entonces lo agregamos
