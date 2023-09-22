@@ -320,11 +320,26 @@ async function initcdp(protocol) {
     });
 
     Page.downloadProgress ((result) => {
-        console.log("downloadProgress", result);
+        // console.log("downloadProgress", result);
         if (result.state == "completed") {
             console.log("download completed, kill");
             downloadlog.status = "download completed";
             kill("completed");
+        }
+        else {
+            clearTimeout(killTimeout);
+            killTimeout=null;
+            delete killTimeout;
+
+            killTimeout = setTimeout(()=>{
+                console.log("Browser action timeout, kill");
+                kill("timeout");
+            }, 30000)
+
+            if(result.state == "canceled") {
+                downloadlog.status = "download canceled";
+                kill("download canceled");
+            }
         }
     });
 
