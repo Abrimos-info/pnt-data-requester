@@ -17,7 +17,10 @@ const requestListener = async function (req, res) {
                 break
             case "/downloadFile":
                 result = await downloadFile(url.searchParams.get("src"),url.searchParams.get("dest"));
-                res.writeHead(200);
+                if(result.status == 'completed')
+                    res.writeHead(200);
+                else
+                    res.writeHead(555);
                 res.end(JSON.stringify(result));
                 break
             default:

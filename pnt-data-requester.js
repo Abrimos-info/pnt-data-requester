@@ -292,6 +292,11 @@ async function initcdp(protocol) {
     if(mode=="download") {
         downloadlog.downloadPath = chromeDownloadPath;
         downloadlog.url = startingUrl;
+
+        killTimeout = setTimeout(()=>{
+            console.log("Browser download timeout, kill");
+            kill("timeout download");
+        },5000)
     }
     else {
         Page.loadEventFired(async (e)=>{
@@ -334,8 +339,8 @@ async function initcdp(protocol) {
             delete killTimeout;
 
             killTimeout = setTimeout(()=>{
-                console.log("Browser action timeout, kill");
-                kill("timeout");
+                console.log("Browser download timeout, kill");
+                kill("timeout download");
             }, 30000)
 
             if(result.state == "canceled") {
