@@ -411,7 +411,7 @@ function kill(source) {
     killTimeout=null;
     if(mode=="download") downloadlog.status = source;
 
-    Page.close();
+    if(Page) Page.close();
     if(mode=="download") {
         browserPromises.map(resolve => resolve(1));
     }
