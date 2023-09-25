@@ -297,6 +297,31 @@ async function initcdp(protocol) {
             console.log("Browser download timeout, kill");
             kill("timeout download");
         },5000)
+
+        Page.downloadProgress ((result) => {
+            // console.log("downloadProgress", result);
+            if (result.state == "completed") {
+                console.log("download completed, kill");
+                downloadlog.status = "download completed";
+                kill("completed");
+            }
+            else {
+                clearTimeout(killTimeout);
+                killTimeout=null;
+                delete killTimeout;
+
+                killTimeout = setTimeout(()=>{
+                    console.log("Browser download timeout, kill");
+                    kill("timeout download");
+                }, 30000)
+
+                if(result.state == "canceled") {
+                    downloadlog.status = "download canceled";
+                    kill("download canceled");
+                }
+            }
+        });
+        
     }
     else {
         Page.loadEventFired(async (e)=>{
@@ -324,30 +349,6 @@ async function initcdp(protocol) {
     Page.navigate({url: startingUrl}).catch(e=> {
         console.error("Navigation error", e);
         kill("navigation error");
-    });
-
-    Page.downloadProgress ((result) => {
-        // console.log("downloadProgress", result);
-        if (result.state == "completed") {
-            console.log("download completed, kill");
-            downloadlog.status = "download completed";
-            kill("completed");
-        }
-        else {
-            clearTimeout(killTimeout);
-            killTimeout=null;
-            delete killTimeout;
-
-            killTimeout = setTimeout(()=>{
-                console.log("Browser download timeout, kill");
-                kill("timeout download");
-            }, 30000)
-
-            if(result.state == "canceled") {
-                downloadlog.status = "download canceled";
-                kill("download canceled");
-            }
-        }
     });
 
     // console.log(await Page.VisualViewport());
