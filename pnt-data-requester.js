@@ -154,7 +154,7 @@ function calculateParams() {
             if (params.organos.length == 0 && dateoffset > 1) {
                 params.dateoffset = dateoffset-1;
                 params.fechaInicio = getDate(dateoffset-1,"/",true);
-                params.fechaFin = getDate(dateoffset-2,"/",true);
+                params.fechaFin = getDate(dateoffset-1,"/",true);
                 params.organos = new Array();
                 for (let i=1;i<=33;i++) {
                     params.organos.push(i);
@@ -321,7 +321,7 @@ async function initcdp(protocol) {
                 }
             }
         });
-        
+
     }
     else {
         Page.loadEventFired(async (e)=>{
