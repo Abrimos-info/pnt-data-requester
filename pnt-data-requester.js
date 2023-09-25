@@ -382,19 +382,6 @@ async function initcdp(protocol) {
         }
     });
 
-    function kill(source) {
-        console.log("kill",source);
-        clearTimeout(killTimeout);
-        clearInterval(paramsInterval);
-        killTimeout=null;
-        if(mode=="download") downloadlog.status = source;
-
-        Page.close();
-        if(mode=="download") {
-            browserPromises.map(resolve => resolve(1));
-        }
-    }
-
     function click(x,y) {
         const options = {
             x: x,
@@ -415,4 +402,17 @@ async function initcdp(protocol) {
         });
     }
 
+}
+
+function kill(source) {
+    console.log("kill",source);
+    clearTimeout(killTimeout);
+    clearInterval(paramsInterval);
+    killTimeout=null;
+    if(mode=="download") downloadlog.status = source;
+
+    Page.close();
+    if(mode=="download") {
+        browserPromises.map(resolve => resolve(1));
+    }
 }
