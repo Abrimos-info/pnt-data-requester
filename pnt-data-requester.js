@@ -281,6 +281,7 @@ async function initcdp(protocol) {
         Console,
         Page,
         Browser,
+        Network,
         Runtime,
         Storage,
     } = protocol;
@@ -344,6 +345,8 @@ async function initcdp(protocol) {
 
             // Runtime.evaluate({ expression: `askOpenData();` });
         })
+
+        Network.requestWillBeSent((result) => { console.log(result); })
     }
 
     Page.navigate({url: startingUrl}).catch(e=> {
