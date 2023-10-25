@@ -295,9 +295,9 @@ async function initcdp(protocol) {
         downloadlog.url = startingUrl;
 
         killTimeout = setTimeout(()=>{
-            console.log("Browser download timeout, kill");
+            console.log("Browser download timeout connect, kill");
             kill("timeout download");
-        },5000)
+        },15000)
 
         Page.downloadProgress ((result) => {
             // console.log("downloadProgress", result);
