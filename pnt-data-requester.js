@@ -387,6 +387,7 @@ async function initcdp(protocol) {
 
             if (text.indexOf("pdr finish") > -1) {
                 writeLog(params.dateoffset,requestlog);
+                requestlog = [];
                 console.log("finish requesting, kill");
                 kill("finish");
             }
