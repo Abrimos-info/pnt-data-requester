@@ -350,7 +350,7 @@ async function initcdp(protocol) {
     }
 
     Page.navigate({url: startingUrl}).catch(e=> {
-        console.error("Navigation error", e);
+        console.error("Navigation error", e, startingUrl, mode);
         kill("navigation error");
     });
 
@@ -421,7 +421,7 @@ async function initcdp(protocol) {
             options.type = 'mouseReleased';
             return protocol.Input.dispatchMouseEvent(options);
         }).catch((err) => {
-            console.error(err);
+            console.error('click', err);
         }).then(() => {
             protocol.close();
         });
