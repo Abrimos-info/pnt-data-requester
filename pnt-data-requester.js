@@ -56,6 +56,7 @@ let requestlog;
 let child2;
 
 async function request_pnt_data(retry) {
+    startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
     mode="request";
     console.log("request_pnt_data");
     requestlog = [];
