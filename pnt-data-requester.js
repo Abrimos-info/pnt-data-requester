@@ -350,10 +350,12 @@ async function initcdp(protocol) {
         Network.requestWillBeSent((result) => { console.log(result); })
     }
 
-    Page.navigate({url: startingUrl}).catch(e=> {
-        console.error("Navigation error", e, startingUrl, mode);
-        kill("navigation error");
-    });
+    setTimeout( () => {
+        Page.navigate({url: startingUrl}).catch(e=> {
+            console.error("Navigation error", e, startingUrl, mode);
+            kill("navigation error");
+        });
+    }, 2000 );
 
     // console.log(await Page.VisualViewport());
     // REMARKS: messageAdded is fired every time a new console message is added
