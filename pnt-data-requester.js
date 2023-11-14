@@ -355,7 +355,7 @@ async function initcdp(protocol) {
             console.error("Navigation error", e, startingUrl, mode);
             kill("navigation error");
         });
-    }, 2000 );
+    }, 5000 );
 
     // console.log(await Page.VisualViewport());
     // REMARKS: messageAdded is fired every time a new console message is added
@@ -376,7 +376,7 @@ async function initcdp(protocol) {
             }
 
             if (text.indexOf("pdr injection fail") > -1) {
-                console.log("HACER CLICK");
+                // console.log("HACER CLICK");
                 // click((Page.VisualViewport.width/2)-150+35,497);
             }
             if (text.indexOf("pdr log") > -1) {

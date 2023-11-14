@@ -48,7 +48,7 @@ async function injectOpenData() {
 
     console.log("injectOpenData");
     try {
-        
+
         params = JSON.parse($(".title-morado").text());
         console.log("pdr params",params);
     }
@@ -63,12 +63,13 @@ async function injectOpenData() {
         fechaInicio = params.fechaInicio;
         fechaFin = params.fechaFin;
         let logitem = fechaInicio+" "+idOrgano;
-        
-        console.log(idOrgano,params.organos,params.organos.indexOf(idOrgano));
 
+        console.log(idOrgano,params.organos,params.organos.indexOf(idOrgano));
+        let organoEmail = '';
         if (params.organos.indexOf(idOrgano) > -1 ) {
+            organoEmail = params.email.replace('@', '+' + idOrgano + '@');
             await fetch("https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos?p_p_id=mx_org_inai_datosabiertos_Sisai_datos_abiertosPortlet_INSTANCE_JUPdRlXXWq6A&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=%2Finai%2FdatosAbiertos%2FexportarDatosAbiertos&p_p_cacheability=cacheLevelPage", {
-              "body": "{\"correo\":\""+params.email+"\",\"formato\":\"csv\",\"peticion\":{\"idOrganoGarante\":"+idOrgano+",\"idTipoBusqueda\":1,\"idTipoPeriodo\":2,\"fechaInicio\":\""+fechaInicio+"\",\"fechaFin\":\""+fechaFin+"\",\"idSujetoObligado\":null,\"dsFolio\":null}}",
+              "body": "{\"correo\":\""+organoEmail+"\",\"formato\":\"csv\",\"peticion\":{\"idOrganoGarante\":"+idOrgano+",\"idTipoBusqueda\":1,\"idTipoPeriodo\":2,\"fechaInicio\":\""+fechaInicio+"\",\"fechaFin\":\""+fechaFin+"\",\"idSujetoObligado\":null,\"dsFolio\":null}}",
               "method": "POST",
               "credentials": "include"
             }).then((a)=> {
@@ -77,11 +78,11 @@ async function injectOpenData() {
                 console.log("pdr log",logitem,(b.statusCode == 0 ? "ok" : "fail"),JSON.stringify(b));
             }).catch((e)=> {
                 console.log("pdr log",logitem,"fail",JSON.stringify(e));
-    
+
             })
             }).catch((e)=> {
                 console.log("pdr log",logitem,"fail",JSON.stringify(e));
-    
+
             })
         }
         else {
@@ -94,5 +95,3 @@ setTimeout(()=>{
     console.log("pdr finish");
 }, 1000)
 }
-
-
