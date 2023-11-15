@@ -1,6 +1,6 @@
 // PidaLa.info 2023
 let waitingForElements;
-
+let waitCaptcha;
 let TANDA_SIZE = 33; //Cantidad de estados a pedir
 
 // This is for communication with background
@@ -9,12 +9,21 @@ chrome.runtime.onConnect.addListener(function (port) {
     port.onMessage.addListener(function (msg) {
         // console.log('content port onMessage', port, msg);
         // console.log("msg",msg);
+        waitCaptcha = setInterval(detectCaptcha,10);
 
         if (msg.url && msg.url.match("es/web/guest/datos_abiertos")) {
             waitingForElements = setInterval(injectOpenData, 1000);
         }
     });
 });
+
+function detectCaptcha() {
+        let detectIframe = $("iframe");
+        if (detectIframe.title.indexOf("Cloudflare") > -1) {
+                console.log("pdr captcha",$("tr:nth-child(5)").offsetTop);
+        }
+}
+
 
 let injectionFails=0;
 function injectionFailed() {
