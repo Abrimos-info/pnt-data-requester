@@ -23,7 +23,7 @@ Se configura con variables de entorno al correr.
 - CHROME_DOWNLOAD_PATH=__dirname+"/downloads"
 
 Ejemplo:
-`DISPLAY=:1 PIDALA_MAIL_ADDRESS="pntpidala@mailcatch.com" CHROME_DATADIR=$PWD/datadir CHROME_EXTENSION_PATH=$PDW/extension node pnt-data-requester.js`
+`DISPLAY=:1 PIDALA_MAIL_ADDRESS="pntpidala@mailcatch.com" CHROME_DATADIR=$PWD/datadir CHROME_EXTENSION_PATH=$PWD/extension node pnt-data-requester.js`
 
 ## Pendientes:
 - CHROME_PROXY = "";

@@ -1,6 +1,7 @@
 
 const CDP = require('chrome-remote-interface');
 var fs = require('fs');
+const path = require('path');
 const { EventEmitter } = require('stream');
 
 const chromePath = process.env.CHROME_PATH || "google-chrome";
@@ -10,6 +11,7 @@ const chromeProxy = process.env.CHROME_PROXY || "";
 //These can change from download_file
 let startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
 let chromeDownloadPath = process.env.CHROME_DOWNLOAD_PATH || __dirname+"/downloads"
+let chromeDownloadFilename = null;
 
 const pidalaMailAddress = process.env.PIDALA_MAIL_ADDRESS || "pntdata@abrimos.info";
 const dailyLogFolder = __dirname+"/log.daily/"
@@ -82,7 +84,7 @@ async function request_pnt_data(retry) {
 
 let downloadlog;
 let mode;
-async function download_file(src,dest,retry) {
+async function download_file(src,dest,filename,retry) {
     mode="download";
 
     console.log("download_file");
@@ -92,6 +94,7 @@ async function download_file(src,dest,retry) {
     }
     startingUrl = src;
     chromeDownloadPath = dest;
+    chromeDownloadFilename = filename;
     child2 = await startBrowser("download");
     console.log("pdr finished");
 
@@ -289,9 +292,14 @@ async function initcdp(protocol) {
 
     await Promise.all([Console.enable(), Page.enable(), Runtime.enable()]);
     // console.log(await Storage.getSharedStorageEntries("local"));
-    Page.setDownloadBehavior({ behavior: 'allow', downloadPath: chromeDownloadPath})
+    Page.setDownloadBehavior({ 
+        behavior: 'allow', 
+        downloadPath: chromeDownloadPath,   
+        eventsEnabled: true //set true to emit download events (e.g. Browser.downloadWillBegin and Browser.downloadProgress)
+    })
     console.log('mode:', mode);
     if(mode=="download") {
+
         downloadlog.downloadPath = chromeDownloadPath;
         downloadlog.url = startingUrl;
 
@@ -300,11 +308,27 @@ async function initcdp(protocol) {
             kill("timeout download");
         },15000)
 
+        Page.downloadWillBegin ( (event) => {
+            //some logic here to determine the filename
+            //the event provides event.suggestedFilename and event.url
+            suggestedFilename[event.guid] = event.suggestedFilename;
+            // console.log("downloadWillBegin",event);
+        });
+        let suggestedFilename = {};
+
         Page.downloadProgress ((result) => {
             // console.log("downloadProgress", result);
             if (result.state == "completed") {
-                console.log("download completed, kill");
+                console.log("download completed, kill",suggestedFilename[result.guid]);
                 downloadlog.status = "download completed";
+                downloadlog.suggestedFilename = suggestedFilename[result.guid];
+                let ext = downloadlog.suggestedFilename.split(".")[downloadlog.suggestedFilename.split(".").length-1];
+                if (chromeDownloadFilename) {
+                    chromeDownloadFilename = chromeDownloadFilename + "." + ext;
+                    downloadlog.chromeDownloadFilename = chromeDownloadFilename;
+                    console.log("rename",suggestedFilename[result.guid],"to",chromeDownloadFilename);
+                    fs.renameSync(path.resolve(chromeDownloadPath, suggestedFilename[result.guid]), path.resolve(chromeDownloadPath, chromeDownloadFilename));
+                }
                 kill("completed");
             }
             else {
@@ -404,7 +428,12 @@ async function initcdp(protocol) {
         killTimeout=null;
         if(mode=="download") downloadlog.status = source;
 
-        Page.close();
+        try {
+            Page.close();
+        }
+        catch(e) {
+            console.error("Browser already killed",e);
+        }
         if(mode=="download") {
             browserPromises.map(resolve => resolve(1));
         }
