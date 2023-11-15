@@ -1,11 +1,4 @@
 // PidaLa.info 2023
-var manifest = chrome.runtime.getManifest();
-
-const devMode = manifest.version_name.indexOf("dev") > -1;
-if (devMode) {
-    console.log("Content devMode",devMode);
-}
-
 let waitingForElements;
 
 let TANDA_SIZE = 33; //Cantidad de estados a pedir
@@ -90,8 +83,7 @@ async function injectOpenData() {
         }
     }
 
-setTimeout(()=>{
-
-    console.log("pdr finish");
-}, 1000)
+    setTimeout(()=>{
+        console.log("pdr finish");
+    }, 1000)
 }

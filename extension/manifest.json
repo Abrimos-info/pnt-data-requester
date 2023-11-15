@@ -12,23 +12,16 @@
     "content_scripts": [
         {
             "matches": [ "https://www.plataformadetransparencia.org.mx/*" ],
-            "css": [ "plus.css" ],
-            "js": [ "scripts/thirdParty/jquery-3.6.1.min.js", "scripts/content.js" ]
+            "js": [ "scripts/content.js" ]
 
         }
     ],
-    "web_accessible_resources": [{
-        "resources": ["images/*"],
-        "matches": ["<all_urls>"]
-    }],
     "action": {
         "default_popup": "popup/popup.html"
     },
-    "permissions": ["activeTab", "tabs", "storage", "notifications", "offscreen"],
-    "host_permissions": ["https://api.pidala.info/*"],
+    "permissions": ["activeTab", "tabs"],
     "version_name": "v1.0.0",
     "background": {
         "service_worker": "background.js"
     }
-
 }
