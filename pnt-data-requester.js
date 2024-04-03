@@ -379,7 +379,7 @@ async function initcdp(protocol) {
             console.error("Navigation error", e, startingUrl, mode);
             kill("navigation error");
         });
-    }, 5000 );
+    }, 2000 );
 
     // console.log(await Page.VisualViewport());
     // REMARKS: messageAdded is fired every time a new console message is added
