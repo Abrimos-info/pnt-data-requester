@@ -120,6 +120,7 @@ function calculateParams() {
         fechaFin: "25/08/2023",
         organos: [],
         dateoffset: 0,
+        endoffset: 1,
         email: pidalaMailAddress
     }
 
@@ -141,7 +142,7 @@ function calculateParams() {
 
             params.dateoffset = dateoffset;
             params.fechaInicio = getDate(dateoffset,"/",true);
-            params.fechaFin = getDate(dateoffset,"/",true);
+            params.fechaFin = getDate(1,"/",true);
             params.organos = new Array();
 
             for (let i=1;i<=33;i++) {
@@ -413,7 +414,7 @@ async function initcdp(protocol) {
             }
 
             if (text.indexOf("pdr finish") > -1) {
-                writeLog(params.dateoffset,requestlog);
+                writeLog(params.endoffset,requestlog);
                 requestlog = [];
                 console.log("finish requesting, kill");
                 kill("finish");
