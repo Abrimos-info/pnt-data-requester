@@ -69,7 +69,7 @@ async function injectOpenData() {
         console.log(idOrgano,params.organos,params.organos.indexOf(idOrgano));
         let organoEmail = '';
         if (params.organos.indexOf(idOrgano) > -1 ) {
-            organoEmail = params.email.replace('@', '+' + (idOrgano-1) + '@');
+            organoEmail = params.email.replace('@', '+a' + (idOrgano-1) + '@');
             await fetch("https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos?p_p_id=mx_org_inai_datosabiertos_Sisai_datos_abiertosPortlet_INSTANCE_JUPdRlXXWq6A&p_p_lifecycle=2&p_p_state=normal&p_p_mode=view&p_p_resource_id=%2Finai%2FdatosAbiertos%2FexportarDatosAbiertos&p_p_cacheability=cacheLevelPage", {
               "body": "{\"correo\":\""+organoEmail+"\",\"formato\":\"csv\",\"peticion\":{\"idOrganoGarante\":"+idOrgano+",\"idTipoBusqueda\":1,\"idTipoPeriodo\":2,\"fechaInicio\":\""+fechaInicio+"\",\"fechaFin\":\""+fechaFin+"\",\"idSujetoObligado\":null,\"dsFolio\":null}}",
               "method": "POST",

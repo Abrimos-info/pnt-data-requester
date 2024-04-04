@@ -67,7 +67,7 @@ async function request_pnt_data(retry) {
     }
 
     params = calculateParams();
-    console.log("iniciando",params.fechaInicio,"quedan",params.organos.length);
+    console.log("iniciando de",params.fechaInicio,"a",params.fechaFin,"quedan",params.organos.length);
 
     if (params.organos.length > 0) {
         child2 = await startBrowser();
@@ -158,7 +158,7 @@ function calculateParams() {
             if (params.organos.length == 0 && dateoffset > 1) {
                 params.dateoffset = dateoffset-1;
                 params.fechaInicio = getDate(dateoffset-1,"/",true);
-                params.fechaFin = getDate(dateoffset-1,"/",true);
+                params.fechaFin = getDate(1,"/",true);
                 params.organos = new Array();
                 for (let i=1;i<=33;i++) {
                     params.organos.push(i);
@@ -292,9 +292,9 @@ async function initcdp(protocol) {
 
     await Promise.all([Console.enable(), Page.enable(), Runtime.enable()]);
     // console.log(await Storage.getSharedStorageEntries("local"));
-    Page.setDownloadBehavior({ 
-        behavior: 'allow', 
-        downloadPath: chromeDownloadPath,   
+    Page.setDownloadBehavior({
+        behavior: 'allow',
+        downloadPath: chromeDownloadPath,
         eventsEnabled: true //set true to emit download events (e.g. Browser.downloadWillBegin and Browser.downloadProgress)
     })
     console.log('mode:', mode);
