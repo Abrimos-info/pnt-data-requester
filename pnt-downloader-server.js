@@ -16,7 +16,7 @@ const requestListener = async function (req, res) {
                 res.end(JSON.stringify(result));
                 break
             case "/downloadFile":
-                result = await downloadFile(url.searchParams.get("src"),url.searchParams.get("dest"),url.searchParams.get("filename"));
+                result = await downloadFile(url.searchParams.get("src"),url.searchParams.get("dest"),url.searchParams.get("filename"),url.searchParams.get("datadir"));
                 if(result.status == 'completed')
                     res.writeHead(200);
                 else
@@ -56,11 +56,11 @@ function requestData() {
 }
 
 
-function downloadFile(src,dest,filename) {
-    console.log("downloadFile",src,dest,filename);
+function downloadFile(src,dest,filename,datadir) {
+    console.log("downloadFile",src,dest,filename,datadir);
     try {
         // return 1
-        return dataRequester.download_file(src,dest,filename);
+        return dataRequester.download_file(src,dest,filename,datadir);
         // return dataRequester.request_pnt_data();
     }
     catch(e) {

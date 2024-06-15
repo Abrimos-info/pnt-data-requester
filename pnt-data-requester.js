@@ -84,9 +84,9 @@ async function request_pnt_data(retry) {
 
 let downloadlog;
 let mode;
-async function download_file(src,dest,filename,retry) {
+async function download_file(src,dest,filename,datadir,retry) {
     mode="download";
-
+    if(datadir) replaceDatadirInFlags(datadir);
     console.log("download_file");
     downloadlog = {};
     if (!retry) {
@@ -101,6 +101,12 @@ async function download_file(src,dest,filename,retry) {
     console.log("download_file","returning",errorCount);
 
     return downloadlog;
+}
+
+function replaceDatadirInFlags(datadir) {
+    flags.map( f => {
+        if(f.match(/\-\-user\-data\-dir/)) f = "--user-data-dir="+datadir;
+    } );
 }
 
 
