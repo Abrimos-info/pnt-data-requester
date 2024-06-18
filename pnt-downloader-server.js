@@ -1,7 +1,7 @@
 const dataRequester = require("./pnt-data-requester");
 const http = require("http");
 const host = 'localhost';
-const port = 16132;
+const port = process.env.PORT || 16132;
 
 const requestListener = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
