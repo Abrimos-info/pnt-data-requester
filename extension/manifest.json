@@ -11,7 +11,7 @@
     },
     "content_scripts": [
         {
-            "matches": [ "https://www.plataformadetransparencia.org.mx/*" ],
+            "matches": [ "https://www.plataformadetransparencia.org.mx/*", "https://servicios.plataformadetransparencia.org.mx/" ],
             "js": [ "scripts/thirdParty/jquery-3.6.1.min.js", "scripts/content.js" ]
 
         }
