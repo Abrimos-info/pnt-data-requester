@@ -446,6 +446,7 @@ async function initcdp(protocol) {
             }
 
             if(text.indexOf("pdr captcha") > -1) {
+                console.log('CAPTCHA detected...')
                 let coords = text.split(' ');
                 setTimeout(click, 5000, parseInt(coords[2]) + 15, parseInt(coords[3] + 15))
             }
