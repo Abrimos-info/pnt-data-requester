@@ -9,7 +9,7 @@ chrome.runtime.onConnect.addListener(function (port) {
     port.onMessage.addListener(function (msg) {
         // console.log('content port onMessage', port, msg);
         // console.log("msg",msg);
-        waitCaptcha = setInterval(detectCaptcha,10);
+        waitCaptcha = setInterval(detectCaptcha,500);
 
         if (msg.url && msg.url.match("es/web/guest/datos_abiertos")) {
             waitingForElements = setInterval(injectOpenData, 1000);
@@ -18,12 +18,33 @@ chrome.runtime.onConnect.addListener(function (port) {
 });
 
 function detectCaptcha() {
-        let detectIframe = $("iframe");
-        if (detectIframe.title.indexOf("Cloudflare") > -1) {
-                console.log("pdr captcha",$("tr:nth-child(5)").offsetTop);
+        let detectIframe = $('iframe');
+        if (detectIframe.length > 0 && detectIframe[0].title.indexOf("Cloudflare") > -1) {
+            let bounding = detectIframe[0].getBoundingClientRect();
+            if(bounding.width > 0) {
+                clearInterval(waitCaptcha);
+                // Click on the box!
+                // setTimeout(clickCaptcha, 10000, bounding.left+25, bounding.top+25, detectIframe[0])
+                console.log("pdr captcha", bounding.top, bounding.left);
+            }
         }
 }
 
+/*
+function clickCaptcha(x,y,el){
+    let checkbox = $(el).contents().find('input');
+    console.log('box', checkbox)
+    let ev = new MouseEvent(
+        "click", {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }
+    );
+    el.dispatchEvent(ev);
+    console.log('clicked on', x, y);
+}
+*/
 
 let injectionFails=0;
 function injectionFailed() {

@@ -86,9 +86,17 @@ let downloadlog;
 let mode;
 async function download_file(src,dest,filename,datadir,retry) {
     mode="download";
-    if(datadir) replaceDatadirInFlags(datadir);
-    console.log("download_file");
     downloadlog = {};
+    
+    if(datadir) { 
+        replaceDatadirInFlags(datadir);
+        downloadlog.profile = datadir.split('/').slice(-1);
+    }
+    else {
+        downloadlog.profile = getDatadirFromFlags();
+    }
+    console.log("download_file");
+    
     if (!retry) {
         errorCount = -1;
     }
@@ -107,6 +115,14 @@ function replaceDatadirInFlags(datadir) {
     flags.map( f => {
         if(f.match(/\-\-user\-data\-dir/)) f = "--user-data-dir="+datadir;
     } );
+}
+
+function getDatadirFromFlags() {
+    let dir = '';
+    flags.map( f => {
+        if(f.match(/\-\-user\-data\-dir/)) dir = f;
+    } );
+    return dir.split('/').slice(-1);
 }
 
 
@@ -309,6 +325,7 @@ async function initcdp(protocol) {
 
         downloadlog.downloadPath = chromeDownloadPath;
         downloadlog.url = startingUrl;
+        downloadlog.start = new Date();
 
         killTimeout = setTimeout(()=>{
             console.log("Browser download timeout connect, kill");
@@ -327,7 +344,8 @@ async function initcdp(protocol) {
             // console.log("downloadProgress", result);
             if (result.state == "completed") {
                 console.log("download completed, kill",suggestedFilename[result.guid]);
-                downloadlog.status = "download completed";
+                downloadlog.status = "completed";
+                downloadlog.end = new Date();
                 downloadlog.suggestedFilename = suggestedFilename[result.guid];
                 let ext = downloadlog.suggestedFilename.split(".")[downloadlog.suggestedFilename.split(".").length-1];
                 if (chromeDownloadFilename) {
@@ -345,11 +363,12 @@ async function initcdp(protocol) {
 
                 killTimeout = setTimeout(()=>{
                     console.log("Browser download timeout, kill");
+                    downloadlog.status = "timeout";
                     kill("timeout download");
                 }, 30000)
 
                 if(result.state == "canceled") {
-                    downloadlog.status = "download canceled";
+                    downloadlog.status = "canceled";
                     kill("download canceled");
                 }
             }
@@ -424,6 +443,11 @@ async function initcdp(protocol) {
                 requestlog = [];
                 console.log("finish requesting, kill");
                 kill("finish");
+            }
+
+            if(text.indexOf("pdr captcha") > -1) {
+                let coords = text.split(' ');
+                setTimeout(click, 5000, parseInt(coords[2]) + 15, parseInt(coords[3] + 15))
             }
         }
     });

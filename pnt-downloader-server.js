@@ -16,6 +16,7 @@ const requestListener = async function (req, res) {
                 res.end(JSON.stringify(result));
                 break
             case "/downloadFile":
+                console.log('--- INITIATING FILE DOWNLOAD REQUEST ---');
                 result = await downloadFile(url.searchParams.get("src"),url.searchParams.get("dest"),url.searchParams.get("filename"),url.searchParams.get("datadir"));
                 if(result.status == 'completed')
                     res.writeHead(200);
