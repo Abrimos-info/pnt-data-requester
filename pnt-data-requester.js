@@ -90,7 +90,7 @@ async function download_file(src,dest,filename,datadir,retry) {
     
     if(datadir) { 
         replaceDatadirInFlags(datadir);
-        downloadlog.profile = datadir.split('/').slice(-1);
+        downloadlog.profile = datadir.split('/').slice(-1)[0];
     }
     else {
         downloadlog.profile = getDatadirFromFlags();
@@ -323,7 +323,7 @@ async function initcdp(protocol) {
     console.log('mode:', mode);
     if(mode=="download") {
 
-        downloadlog.downloadPath = chromeDownloadPath;
+        // downloadlog.downloadPath = chromeDownloadPath;
         downloadlog.url = startingUrl;
         downloadlog.start = new Date();
 
@@ -346,15 +346,17 @@ async function initcdp(protocol) {
                 console.log("download completed, kill",suggestedFilename[result.guid]);
                 downloadlog.status = "completed";
                 downloadlog.end = new Date();
-                downloadlog.suggestedFilename = suggestedFilename[result.guid];
-                let ext = downloadlog.suggestedFilename.split(".")[downloadlog.suggestedFilename.split(".").length-1];
+                let tempSuggested = suggestedFilename[result.guid];
+                let ext = tempSuggested.split(".")[tempSuggested.split(".").length-1];
                 if (chromeDownloadFilename) {
+                    downloadlog.folio_unico = chromeDownloadFilename;
                     chromeDownloadFilename = chromeDownloadFilename + "." + ext;
-                    downloadlog.chromeDownloadFilename = chromeDownloadFilename;
                     console.log("rename",suggestedFilename[result.guid],"to",chromeDownloadFilename);
                     fs.renameSync(path.resolve(chromeDownloadPath, suggestedFilename[result.guid]), path.resolve(chromeDownloadPath, chromeDownloadFilename));
                 }
-                kill("completed");
+                setTimeout(() =>{
+                    kill("completed");
+                }, 100);
             }
             else {
                 clearTimeout(killTimeout);
@@ -449,6 +451,7 @@ async function initcdp(protocol) {
                 console.log('CAPTCHA detected...')
                 let coords = text.split(' ');
                 setTimeout(click, 5000, parseInt(coords[2]) + 15, parseInt(coords[3] + 15))
+                killTimeout = setTimeout(kill, 60000, "captcha")
             }
         }
     });
