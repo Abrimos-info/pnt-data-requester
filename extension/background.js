@@ -1,4 +1,5 @@
 // PidaLa.info 2023
+console.log("extension loaded");
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     // changeInfo object: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/onUpdated#changeInfo
     // status is more reliable (in my case)
