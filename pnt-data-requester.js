@@ -354,6 +354,9 @@ async function initcdp(protocol) {
                     console.log("rename",suggestedFilename[result.guid],"to",chromeDownloadFilename);
                     fs.renameSync(path.resolve(chromeDownloadPath, suggestedFilename[result.guid]), path.resolve(chromeDownloadPath, chromeDownloadFilename));
                 }
+                else {
+                    downloadlog.file = suggestedFilename[result.guid]
+                }
                 setTimeout(() =>{
                     kill("completed");
                 }, 100);
