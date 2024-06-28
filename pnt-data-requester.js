@@ -330,13 +330,16 @@ async function initcdp(protocol) {
         killTimeout = setTimeout(()=>{
             console.log("Browser download timeout connect, kill");
             kill("timeout download");
-        },15000)
+        },30000)
 
         Page.downloadWillBegin ( (event) => {
             //some logic here to determine the filename
             //the event provides event.suggestedFilename and event.url
             suggestedFilename[event.guid] = event.suggestedFilename;
             // console.log("downloadWillBegin",event);
+            clearTimeout(killTimeout);
+            killTimeout=null;
+            delete killTimeout;
         });
         let suggestedFilename = {};
 
@@ -359,7 +362,7 @@ async function initcdp(protocol) {
                 }
                 setTimeout(() =>{
                     kill("completed");
-                }, 100);
+                }, 500);
             }
             else {
                 clearTimeout(killTimeout);
