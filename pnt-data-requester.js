@@ -362,7 +362,7 @@ async function initcdp(protocol) {
                 }
                 setTimeout(() =>{
                     kill("completed");
-                }, 500);
+                }, 1000);
             }
             else {
                 clearTimeout(killTimeout);
@@ -413,7 +413,7 @@ async function initcdp(protocol) {
             console.error("Navigation error", e, startingUrl, mode);
             kill("navigation error");
         });
-    }, 2500 );
+    }, 3000 );
 
     // console.log(await Page.VisualViewport());
     // REMARKS: messageAdded is fired every time a new console message is added
