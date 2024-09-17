@@ -9,7 +9,7 @@ const chromePort = process.env.CHROME_PORT || 37195;
 const chromeProxy = process.env.CHROME_PROXY || "";
 
 //These can change from download_file
-let startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
+let startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/datos-abiertos';
 let chromeDownloadPath = process.env.CHROME_DOWNLOAD_PATH || __dirname+"/downloads"
 let chromeDownloadFilename = null;
 
@@ -50,15 +50,21 @@ if (process.env.CHROME_PROXY) {
 
 let errorCount;
 let params;
-// request_pnt_data();
+let requestlog;
+let child2;
+let mode;
+let browserPromises = [];
+let killTimeout=null;
+let paramsInterval = null;
+
+request_pnt_data();
 
 module.exports = { request_pnt_data, download_file }
 
-let requestlog;
-let child2;
+
 
 async function request_pnt_data(retry) {
-    startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/es/web/guest/datos_abiertos';
+    startingUrl = process.env.STARTING_URL || 'https://www.plataformadetransparencia.org.mx/datos-abiertos';
     mode="request";
     console.log("request_pnt_data");
     requestlog = [];
@@ -83,7 +89,6 @@ async function request_pnt_data(retry) {
 }
 
 let downloadlog;
-let mode;
 async function download_file(src,dest,filename,datadir,retry) {
     mode="download";
     downloadlog = {};
@@ -178,6 +183,7 @@ function calculateParams() {
                 }
             }
 
+            
             if (params.organos.length == 0 && dateoffset > 1) {
                 params.dateoffset = dateoffset-1;
                 params.fechaInicio = getDate(dateoffset-1,"/",true);
@@ -191,8 +197,11 @@ function calculateParams() {
         catch(e) {
             console.log("log for date not found",date);
             // console.log(e);
+            params.organos = [1];
         }
     }
+
+
     return params;
 }
 
@@ -292,9 +301,6 @@ async function startBrowser() {
     return promise;
 }
 
-let browserPromises = [];
-let killTimeout=null;
-let paramsInterval = null;
 
 //procolo de control
 //configura ruta de descargas
@@ -399,7 +405,7 @@ async function initcdp(protocol) {
             clearInterval(paramsInterval);
             console.log("check params ready")
             paramsInterval = setInterval(()=>{
-                Runtime.evaluate({ expression: 'console.log("pdr params",$(".title-morado").length)' });
+                Runtime.evaluate({ expression: 'console.log("pdr params",$("h5._color-rosa").length)' });
             },100)
 
             // Runtime.evaluate({ expression: `askOpenData();` });
@@ -430,7 +436,7 @@ async function initcdp(protocol) {
 
                 paramsText = JSON.stringify(params).replace(/\"/g,"\\\"");
                 console.log("Sending params",paramsText);
-                Runtime.evaluate({ expression: '$(".title-morado").text("'+paramsText+'")' });
+                Runtime.evaluate({ expression: '$("h5._color-rosa").text("'+paramsText+'")' });
             }
 
             if (text.indexOf("pdr injection fail") > -1) {
