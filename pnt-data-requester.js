@@ -57,7 +57,7 @@ let browserPromises = [];
 let killTimeout=null;
 let paramsInterval = null;
 
-request_pnt_data();
+// request_pnt_data();
 
 module.exports = { request_pnt_data, download_file }
 
@@ -197,7 +197,7 @@ function calculateParams() {
         catch(e) {
             console.log("log for date not found",date);
             // console.log(e);
-            params.organos = [1];
+            // params.organos = [1];
         }
     }
 
